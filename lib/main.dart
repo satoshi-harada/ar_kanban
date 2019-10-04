@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final samples = [
       Sample(
-        'AR Kanban',
+        'AR Kanban HaZuMu',
         'AR + Kanban Application.',
         Icons.speaker_notes,
             () => Navigator.of(context)
@@ -146,7 +146,7 @@ class MyApp extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ARKit Demo'),
+        title: const Text('AR Kanban HaZuMu'),
       ),
       body:
           ListView(children: samples.map((s) => SampleItem(item: s)).toList()),

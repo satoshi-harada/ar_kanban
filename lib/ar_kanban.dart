@@ -23,7 +23,7 @@ class _ArKanbanState extends State<ArKanban> {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: const Text('AR Kanban App'),
+        title: const Text('AR Kanban HaZuMu'),
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,

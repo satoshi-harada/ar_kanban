@@ -1,16 +1,19 @@
-# arkit_plugin_example
+# Git Message Generator
+## Overview
+ARでタスクカンバンを表示するデモアプリです。
 
-Demonstrates how to use the arkit_plugin plugin.
+## Description
+ARでタスクカンバンを表示するデモアプリです。
+FlutterとARKitを使ってアプリ作成とAR表示を実現しています。
+デモアプリなので、まだ機能は限られていますが、これからタスクカンバンとしての実用的な機能を追加していく予定です。
 
-## Getting Started
+### 実現できている機能
+* ToDoとDoneのエリアを表示
+* ToDoの付箋をタップすると色を変えたり削除したりできる
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+### 追加したい機能
+* 付箋をタップして付箋の文章を編集できるようにする
+* 付箋をFloatingButtonのタップで追加できるようにする
+* 付箋をドラッグでToDoからDoneに移動できるようにする
+* AR_KANBANの状態を端末のSQLiteに保存できるようにする
+* AR_KANBANの状態をFirebaseに保存できるようにする（これができれば他の人にもカンバンを共有できる）
