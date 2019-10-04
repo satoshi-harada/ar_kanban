@@ -9,7 +9,16 @@ class ArKanban extends StatefulWidget {
 
 class _ArKanbanState extends State<ArKanban> {
   ARKitController arkitController;
+  // nodes
+  ARKitNode kanbanNode;
+  ARKitNode todoAreaNode;
+  ARKitNode doneAreaNode;
+  // kanban base
   ARKitPlane kanbanBase;
+  // task area
+  ARKitPlane todoAreaPlane;
+  ARKitPlane doneAreaPlane;
+  // task
   ARKitPlane task1Plane;
   ARKitPlane task2Plane;
   ARKitText task1Text;
@@ -29,18 +38,11 @@ class _ArKanbanState extends State<ArKanban> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
           FloatingActionButton(
-            heroTag: 'sizeup',
+            heroTag: 'addtask',
             child: Icon(
               Icons.add,
             ),
-            onPressed: kanbanSizeUp,
-          ),
-          FloatingActionButton(
-            heroTag: 'sizedown',
-            child: Icon(
-              Icons.delete,
-            ),
-            onPressed: kanbanSizeDown,
+            onPressed: addTask,
           ),
         ],
       ),
@@ -56,13 +58,16 @@ class _ArKanbanState extends State<ArKanban> {
     this.arkitController.onNodeTap = (name) => onNodeTapHandler(name);
 
     // kanban base
-    this.arkitController.add(_createKanbanBase());
+    kanbanNode = _createKanbanBase();
+    this.arkitController.add(kanbanNode);
     this.arkitController.add(_createKanbanBaseText());
     // todo area
-    this.arkitController.add(_createTodoArea());
+    todoAreaNode = _createTodoArea();
+    this.arkitController.add(todoAreaNode);
     this.arkitController.add(_createTodoAreaText());
     // done area
-    this.arkitController.add(_createDoneArea());
+    doneAreaNode = _createDoneArea();
+    this.arkitController.add(doneAreaNode);
     this.arkitController.add(_createDoneAreaText());
     // task
     this.arkitController.add(ARKitNode(name: 'task_parent1'));
@@ -73,11 +78,49 @@ class _ArKanbanState extends State<ArKanban> {
     this.arkitController.add(_createTodoTask2Text(), parentNodeName: 'task_parent2');
   }
 
-  void kanbanSizeUp() {
-    kanbanBase.height.value = kanbanBase.height.value * 1.5;
-  }
-  void kanbanSizeDown() {
-    kanbanBase.height.value = kanbanBase.height.value * 0.5;
+  void addTask() {
+    double expansionSize = 0.2;
+    double positioAdjust = expansionSize / 2;
+    // kanban base and todo-done area size up
+    kanbanBase.height.value = kanbanBase.height.value + expansionSize + 0.075;
+    todoAreaPlane.height.value = todoAreaPlane.height.value + expansionSize;
+    doneAreaPlane.height.value = doneAreaPlane.height.value + expansionSize;
+    // kanban base and todo-done area position adjust
+    kanbanNode.position.value = vector.Vector3(
+        kanbanNode.position.value.x,
+        kanbanNode.position.value.y - positioAdjust - 0.05,
+        kanbanNode.position.value.z
+    );
+    todoAreaNode.position.value = vector.Vector3(
+        todoAreaNode.position.value.x,
+        todoAreaNode.position.value.y - positioAdjust,
+        todoAreaNode.position.value.z
+    );
+    doneAreaNode.position.value = vector.Vector3(
+        doneAreaNode.position.value.x,
+        doneAreaNode.position.value.y - positioAdjust,
+        doneAreaNode.position.value.z
+    );
+    // add new task
+    final newTaskPlane = ARKitPlane(
+      width: 0.35,
+      height: 0.15,
+      materials: [
+        ARKitMaterial(
+          transparency: 1,
+          diffuse: ARKitMaterialProperty(color: Colors.white),
+        ),
+      ],
+    );
+    final newTaskNode = ARKitNode(
+      geometry: newTaskPlane,
+      position: vector.Vector3(
+          todoAreaNode.position.value.x + 0.025,
+          todoAreaNode.position.value.y * 2 - positioAdjust,
+          todoAreaNode.position.value.z + 0.1
+      ),
+    );
+    this.arkitController.add(newTaskNode);
   }
 
   ARKitNode _createKanbanBase() {
@@ -116,7 +159,7 @@ class _ArKanbanState extends State<ArKanban> {
   }
 
   ARKitNode _createTodoArea() {
-    final plane = ARKitPlane(
+    todoAreaPlane = ARKitPlane(
       width: 0.5,
       height: 0.7,
       materials: [
@@ -127,7 +170,7 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
-      geometry: plane,
+      geometry: todoAreaPlane,
       position: vector.Vector3(-0.3, -0.075, -1.8),
     );
   }
@@ -222,7 +265,7 @@ class _ArKanbanState extends State<ArKanban> {
   }
 
   ARKitNode _createDoneArea() {
-    final plane = ARKitPlane(
+    doneAreaPlane = ARKitPlane(
       width: 0.5,
       height: 0.7,
       materials: [
@@ -233,7 +276,7 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
-      geometry: plane,
+      geometry: doneAreaPlane,
       position: vector.Vector3(0.3, -0.075, -1.8),
     );
   }
