@@ -9,8 +9,10 @@ class ArKanban extends StatefulWidget {
 
 class _ArKanbanState extends State<ArKanban> {
   ARKitController arkitController;
+  ARKitPlane kanbanBase;
   ARKitPlane task1Plane;
   ARKitPlane task2Plane;
+  ARKitText task1Text;
 
   @override
   void dispose() {
@@ -23,6 +25,25 @@ class _ArKanbanState extends State<ArKanban> {
       appBar: AppBar(
         title: const Text('AR Kanban App'),
       ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            heroTag: 'sizeup',
+            child: Icon(
+              Icons.add,
+            ),
+            onPressed: kanbanSizeUp,
+          ),
+          FloatingActionButton(
+            heroTag: 'sizedown',
+            child: Icon(
+              Icons.delete,
+            ),
+            onPressed: kanbanSizeDown,
+          ),
+        ],
+      ),
       body: Container(
         child: ARKitSceneView(
           enableTapRecognizer: true,
@@ -34,20 +55,33 @@ class _ArKanbanState extends State<ArKanban> {
     this.arkitController = arkitController;
     this.arkitController.onNodeTap = (name) => onNodeTapHandler(name);
 
+    // kanban base
     this.arkitController.add(_createKanbanBase());
     this.arkitController.add(_createKanbanBaseText());
+    // todo area
     this.arkitController.add(_createTodoArea());
     this.arkitController.add(_createTodoAreaText());
-    this.arkitController.add(_createTodoTask1());
-    this.arkitController.add(_createTodoTask1Text());
-    this.arkitController.add(_createTodoTask2());
-    this.arkitController.add(_createTodoTask2Text());
+    // done area
     this.arkitController.add(_createDoneArea());
     this.arkitController.add(_createDoneAreaText());
+    // task
+    this.arkitController.add(ARKitNode(name: 'task_parent1'));
+    this.arkitController.add(_createTodoTask1(), parentNodeName: 'task_parent1');
+    this.arkitController.add(_createTodoTask1Text(), parentNodeName: 'task_parent1');
+    this.arkitController.add(ARKitNode(name: 'task_parent2'));
+    this.arkitController.add(_createTodoTask2(), parentNodeName: 'task_parent2');
+    this.arkitController.add(_createTodoTask2Text(), parentNodeName: 'task_parent2');
+  }
+
+  void kanbanSizeUp() {
+    kanbanBase.height.value = kanbanBase.height.value * 1.5;
+  }
+  void kanbanSizeDown() {
+    kanbanBase.height.value = kanbanBase.height.value * 0.5;
   }
 
   ARKitNode _createKanbanBase() {
-    final plane = ARKitPlane(
+    kanbanBase = ARKitPlane(
       width: 1.5,
       height: 1,
       materials: [
@@ -58,7 +92,7 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
-      geometry: plane,
+      geometry: kanbanBase,
       position: vector.Vector3(0, 0, -2),
     );
   }
@@ -73,6 +107,7 @@ class _ArKanbanState extends State<ArKanban> {
         )
       ],
     );
+
     return ARKitNode(
       geometry: text,
       position: vector.Vector3(-0.4, 0.3, -1.9),
@@ -126,14 +161,14 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
-      name: 'Task1',
+      name: 'task_plane1',
       geometry: task1Plane,
       position: vector.Vector3(-0.28, -0.02, -1.7),
     );
   }
 
   ARKitNode _createTodoTask1Text() {
-    final text = ARKitText(
+    task1Text = ARKitText(
       text: 'Task1',
       extrusionDepth: 0,
       materials: [
@@ -143,7 +178,8 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
-      geometry: text,
+      name: 'task_text1',
+      geometry: task1Text,
       position: vector.Vector3(-0.4, -0.07, -1.6),
       scale: vector.Vector3(0.0075, 0.0075, 0.01),
     );
@@ -161,7 +197,7 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
-      name: 'Task2',
+      name: 'task_plane2',
       geometry: task2Plane,
       position: vector.Vector3(-0.28, -0.2, -1.7),
     );
@@ -178,6 +214,7 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
+      name: 'task_text1',
       geometry: text,
       position: vector.Vector3(-0.4, -0.25, -1.6),
       scale: vector.Vector3(0.0075, 0.0075, 0.01),
@@ -219,33 +256,55 @@ class _ArKanbanState extends State<ArKanban> {
   }
 
   void onNodeTapHandler(String name) {
-    switch (name) {
-      // Task1
-      case 'Task1':
-        task1Plane.materials.value = [
-          ARKitMaterial(
-            transparency: 1,
-            diffuse: ARKitMaterialProperty(color: Colors.yellow),
-          ),
-        ];
-        break;
-      // Task2
-      case 'Task2':
-        task2Plane.materials.value = [
-          ARKitMaterial(
-            transparency: 1,
-            diffuse: ARKitMaterialProperty(color: Colors.blueGrey),
-          ),
-        ];
-        break;
-    }
-
-    // dialog
-    if (name == 'Task1' || name == 'Task2') {
+    if (name == 'task_plane1') {
       showDialog<void>(
         context: context,
         builder: (BuildContext context) =>
-            AlertDialog(content: Text('You tapped on $name')),
+            AlertDialog(
+              title: Text('task color change'),
+              content: Text('Do you want to change the color of Task1?'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('ok'),
+                  onPressed: () {
+                    task1Plane.materials.value = [
+                      ARKitMaterial(
+                        transparency: 1,
+                        diffuse: ARKitMaterialProperty(color: Colors.yellow),
+                      ),
+                    ];
+                    Navigator.pop<String>(context, 'ok');
+                  },
+                ),
+                FlatButton(
+                  child: Text('cancel'),
+                  onPressed: () {Navigator.pop<String>(context, 'cancel');},
+                )
+              ],
+            ),
+      );
+    }
+    if (name == 'task_plane2') {
+      showDialog<void>(
+        context: context,
+        builder: (BuildContext context) =>
+            AlertDialog(
+              title: Text('task delete'),
+              content: Text('Do you want to delete Task2?'),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('ok'),
+                  onPressed: (){
+                    arkitController.remove('task_parent2');
+                    Navigator.pop<String>(context, 'ok');
+                  },
+                ),
+                FlatButton(
+                  child: Text('cancel'),
+                  onPressed: () {Navigator.pop<String>(context, 'cancel');},
+                )
+              ],
+            ),
       );
     }
   }
