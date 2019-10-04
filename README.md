@@ -1,4 +1,4 @@
-# Git Message Generator
+# AR Kanban HaZuMu
 ## Overview
 ARでタスクカンバンを表示するデモアプリです。
 
