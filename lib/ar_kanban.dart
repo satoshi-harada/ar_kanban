@@ -9,6 +9,9 @@ class ArKanban extends StatefulWidget {
 
 class _ArKanbanState extends State<ArKanban> {
   ARKitController arkitController;
+  // node list
+  List<ARKitNode> nodes = [];
+
   // nodes
   ARKitNode kanbanNode;
   ARKitNode todoAreaNode;
@@ -22,6 +25,7 @@ class _ArKanbanState extends State<ArKanban> {
   ARKitPlane task1Plane;
   ARKitPlane task2Plane;
   ARKitText task1Text;
+  int taskNumber = 3;
 
   @override
   void dispose() {
@@ -49,13 +53,16 @@ class _ArKanbanState extends State<ArKanban> {
       body: Container(
         child: ARKitSceneView(
           enableTapRecognizer: true,
+          enablePanRecognizer: true,
+          planeDetection: ARPlaneDetection.horizontal,
           onARKitViewCreated: onARKitViewCreated
         ),
       ));
 
   void onARKitViewCreated(ARKitController arkitController) {
     this.arkitController = arkitController;
-    this.arkitController.onNodeTap = (name) => onNodeTapHandler(name);
+    this.arkitController.onNodeTap = (name) => _onTapHandler(name);
+    this.arkitController.onNodePan = (pan) => _onPanHandler(pan);
 
     // kanban base
     kanbanNode = _createKanbanBase();
@@ -102,25 +109,47 @@ class _ArKanbanState extends State<ArKanban> {
         doneAreaNode.position.value.z
     );
     // add new task
-    final newTaskPlane = ARKitPlane(
-      width: 0.35,
-      height: 0.15,
-      materials: [
-        ARKitMaterial(
-          transparency: 1,
-          diffuse: ARKitMaterialProperty(color: Colors.white),
-        ),
-      ],
+    final newTaskPlaneNode = ARKitNode(
+      geometry: ARKitPlane(
+        width: 0.35,
+        height: 0.15,
+        materials: [
+          ARKitMaterial(
+            transparency: 1,
+            diffuse: ARKitMaterialProperty(color: Colors.white),
+          ),
+        ],
+      ),
     );
-    final newTaskNode = ARKitNode(
-      geometry: newTaskPlane,
-      position: vector.Vector3(
+
+    final newTaskTextNode = ARKitNode(
+      name: 'task_text' + taskNumber.toString(),
+      geometry: ARKitText(
+        text: 'Task' + taskNumber.toString(),
+        extrusionDepth: 0,
+        materials: [
+          ARKitMaterial(
+            diffuse: ARKitMaterialProperty(color: Colors.pink),
+          )
+        ],
+      ),
+      position: vector.Vector3(-0.1,0,0.1),
+      scale: vector.Vector3(0.0075, 0.0075, 0.01),
+    );
+
+    this.arkitController.add(
+      ARKitNode(
+        name: 'task_parent' + taskNumber.toString(),
+        position: vector.Vector3(
           todoAreaNode.position.value.x + 0.025,
           todoAreaNode.position.value.y * 2 - positioAdjust,
           todoAreaNode.position.value.z + 0.1
-      ),
+        ),
+      )
     );
-    this.arkitController.add(newTaskNode);
+    this.arkitController.add(newTaskPlaneNode, parentNodeName: 'task_parent' + taskNumber.toString());
+    this.arkitController.add(newTaskTextNode, parentNodeName: 'task_parent' + taskNumber.toString());
+    taskNumber++;
   }
 
   ARKitNode _createKanbanBase() {
@@ -135,6 +164,7 @@ class _ArKanbanState extends State<ArKanban> {
       ],
     );
     return ARKitNode(
+      name: 'base_plane',
       geometry: kanbanBase,
       position: vector.Vector3(0, 0, -2),
     );
@@ -298,7 +328,8 @@ class _ArKanbanState extends State<ArKanban> {
     );
   }
 
-  void onNodeTapHandler(String name) {
+  // Nodeをタップしたときの動作を定義
+  void _onTapHandler(String name) {
     if (name == 'task_plane1') {
       showDialog<void>(
         context: context,
@@ -349,6 +380,13 @@ class _ArKanbanState extends State<ArKanban> {
               ],
             ),
       );
+    }
+  }
+
+  // Nodeをパン（左右にフリック操作）したときの動作定義
+  void _onPanHandler(List<ARKitNodePanResult> pan) {
+    if (pan[0].nodeName.startsWith('task_plane')) {
+      AlertDialog(content: Text(pan[0].nodeName));
     }
   }
 }
