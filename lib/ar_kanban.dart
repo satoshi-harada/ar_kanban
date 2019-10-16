@@ -312,7 +312,7 @@ class _ArKanbanState extends State<ArKanban> {
       if (node != null && node.name.contains('task_plane')) {
         final position = vector.Vector3(
           panNode.translation.x / 180,
-          node.position.value.y,
+          panNode.translation.y / -180,
           node.position.value.z
         );
         node.position.value = position;
