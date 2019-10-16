@@ -38,6 +38,7 @@ class _ArKanbanState extends State<ArKanban> {
       body: Container(
         child: ARKitSceneView(
           enableTapRecognizer: true,
+          enablePanRecognizer: true,
           onARKitViewCreated: onARKitViewCreated
         ),
       ));
@@ -45,6 +46,7 @@ class _ArKanbanState extends State<ArKanban> {
   void onARKitViewCreated(ARKitController arkitController) {
     this.arkitController = arkitController;
     this.arkitController.onNodeTap = (name) => _onTapHandler(name);
+    this.arkitController.onNodePan = (pan) => _onPanHandler(pan);
 
     // base area plane
     final basePlane = _createKanbanBase();
@@ -275,10 +277,10 @@ class _ArKanbanState extends State<ArKanban> {
     );
   }
 
-  // Nodeをタップしたときの動作を定義
+  // Nodeをタップしたときの動作を定義（タスクの削除）
   void _onTapHandler(String name) {
     final tapedNode = nodes.firstWhere((n) => n.name == name);
-    if (tapedNode != null && name.contains('task_plane')) {
+    if (tapedNode != null && tapedNode.name.contains('task_plane')) {
       showDialog<void>(
         context: context,
         builder: (BuildContext context) =>
@@ -300,6 +302,21 @@ class _ArKanbanState extends State<ArKanban> {
               ],
             ),
       );
+    }
+  }
+
+  // Nodeをパンしたときの動作を定義（タスクの横移動）
+  void _onPanHandler(List<ARKitNodePanResult> pan) {
+    for (var panNode in pan) {
+      final node = nodes.firstWhere((n) => n.name == panNode.nodeName);
+      if (node != null && node.name.contains('task_plane')) {
+        final position = vector.Vector3(
+          panNode.translation.x / 180,
+          node.position.value.y,
+          node.position.value.z
+        );
+        node.position.value = position;
+      }
     }
   }
 }
