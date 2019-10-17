@@ -281,27 +281,59 @@ class _ArKanbanState extends State<ArKanban> {
   void _onTapHandler(String name) {
     final tapedNode = nodes.firstWhere((n) => n.name == name);
     if (tapedNode != null && tapedNode.name.contains('task_plane')) {
-      showDialog<void>(
-        context: context,
-        builder: (BuildContext context) =>
+      final targetTextNode = nodes.firstWhere((n) => n.name == name.replaceFirst('task_plane', 'task_text'));
+      if (targetTextNode != null && targetTextNode.name.contains('task_text')) {
+        String newTaskText = '';
+        TextEditingController _textFieldController = TextEditingController();
+        showDialog<void>(
+          context: context,
+          builder: (BuildContext context) =>
             AlertDialog(
-              title: Text('タスクの削除'),
-              content: Text('このタスクを削除しますか？'),
+              title: Text('タスクのタイトルを変更'),
+              content: TextField(
+                controller: _textFieldController,
+                decoration: InputDecoration(hintText: 'タスクのタイトル'),
+                onChanged: (value) {
+                  newTaskText = value;
+                },
+              ),
               actions: <Widget>[
                 FlatButton(
                   child: Text('ok'),
                   onPressed: (){
-                    arkitController.remove(name);
+                    final String targetTextNodeName = targetTextNode.name;
+                    arkitController.remove(targetTextNodeName);
+                    nodes.remove(targetTextNodeName);
+                    final newTaskTextNode = ARKitNode(
+                      name: targetTextNodeName,
+                      geometry: ARKitText(
+                        text: newTaskText,
+                        extrusionDepth: 0,
+                        materials: [
+                          ARKitMaterial(
+                            diffuse: ARKitMaterialProperty(color: Colors.pink),
+                          )
+                        ],
+                      ),
+                      position: vector.Vector3(-0.125,-0.05,0.02),
+                      scale: vector.Vector3(0.0075, 0.0075, 0.01),
+                    );
+                    this.arkitController.add(newTaskTextNode, parentNodeName: tapedNode.name);
+                    nodes.add(newTaskTextNode);
+
                     Navigator.pop<String>(context, 'ok');
                   },
                 ),
                 FlatButton(
                   child: Text('cancel'),
-                  onPressed: () {Navigator.pop<String>(context, 'cancel');},
+                  onPressed: () {
+                    Navigator.pop<String>(context, 'cancel');
+                  },
                 )
               ],
             ),
-      );
+        );
+      }
     }
   }
 
