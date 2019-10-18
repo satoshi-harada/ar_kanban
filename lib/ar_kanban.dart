@@ -277,7 +277,7 @@ class _ArKanbanState extends State<ArKanban> {
     );
   }
 
-  // Nodeをタップしたときの動作を定義（タスクの削除）
+  // Nodeをタップしたときの動作を定義（タスクのタイトルを変更）
   void _onTapHandler(String name) {
     final tapedNode = nodes.firstWhere((n) => n.name == name);
     if (tapedNode != null && tapedNode.name.contains('task_plane')) {
@@ -337,7 +337,7 @@ class _ArKanbanState extends State<ArKanban> {
     }
   }
 
-  // Nodeをパンしたときの動作を定義（タスクの横移動）
+  // Nodeをパンしたときの動作を定義（タスクの移動）
   void _onPanHandler(List<ARKitNodePanResult> pan) {
     for (var panNode in pan) {
       final node = nodes.firstWhere((n) => n.name == panNode.nodeName);
@@ -348,6 +348,24 @@ class _ArKanbanState extends State<ArKanban> {
           node.position.value.z
         );
         node.position.value = position;
+
+        // done task color change
+        final doneAreaPosition = vector.Vector3(0.3, -0.075, 0.1);
+        if (node.position.value.x > doneAreaPosition.x) {
+          node.geometry.materials.value = [
+            ARKitMaterial(
+              transparency: 1,
+              diffuse: ARKitMaterialProperty(color: Colors.grey),
+            )
+          ];
+        } else {
+          node.geometry.materials.value = [
+            ARKitMaterial(
+              transparency: 1,
+              diffuse: ARKitMaterialProperty(color: Colors.white),
+            )
+          ];
+        }
       }
     }
   }
